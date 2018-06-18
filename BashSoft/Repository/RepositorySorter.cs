@@ -1,38 +1,39 @@
 ﻿namespace BashSoft.Repository
 {
+    using IO;
+    using Static_data;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using BashSoft.IO;
-    using BashSoft.Static_data;
 
-    internal static class RepositorySorters
+    public class RepositorySorter
     {
-        public static void OrderAndTake(Dictionary<string, List<int>> wantedData, string comparison,
+        public void OrderAndTake(Dictionary<string, double> studentsWithMarks, string comparison,
             int studentsToTake)
         {
             comparison = comparison.ToLower();
 
             if (comparison == "ascending")
             {
-                PrintStudents(wantedData
-                    .OrderBy(x => x.Value.Sum())
+                this.PrintStudents(studentsWithMarks
+                    .OrderBy(x => x.Value)
                     .Take(studentsToTake)
                     .ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
             }
             else if (comparison == "descending")
             {
-                PrintStudents(wantedData
-                    .OrderByDescending(x => x.Value.Sum())
+                this.PrintStudents(studentsWithMarks
+                    .OrderByDescending(x => x.Value)
                     .Take(studentsToTake)
                     .ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
             }
             else
             {
-                OutputWriter.DisplayException(ExceptionMessage.InvalidComparisonQuery);
+                throw new ArgumentException(ExceptionMessage.InvalidComparisonQuery);
             }
         }
 
-        private static void PrintStudents(Dictionary<string, List<int>> sortedStudents)
+        private void PrintStudents(Dictionary<string, double> sortedStudents)
         {
             foreach (var kvp in sortedStudents)
             {

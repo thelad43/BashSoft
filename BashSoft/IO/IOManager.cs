@@ -1,13 +1,14 @@
 ﻿namespace BashSoft.IO
 {
+    using Exceptions;
+    using Static_data;
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using BashSoft.Static_data;
 
-    internal static class IOManager
+    public class IOManager
     {
-        public static void TraverseDirectory(int depth)
+        public void TraverseDirectory(int depth)
         {
             OutputWriter.WriteEmptyLine();
             var initialIdentation = SessionData.CurrentPath.Split('\\').Length;
@@ -54,7 +55,7 @@
             }
         }
 
-        public static void ChangeCurrentDirectoryRelative(string relativePath)
+        public void ChangeCurrentDirectoryRelative(string relativePath)
         {
             if (relativePath == "..")
             {
@@ -67,7 +68,7 @@
                 }
                 catch (ArgumentOutOfRangeException)
                 {
-                    OutputWriter.DisplayException(ExceptionMessage.UnableToGoHigherInPartionHierarchy);
+                    throw new ArgumentOutOfRangeException("indexOfSlash", ExceptionMessage.InvalidDestionation);
                 }
             }
             else
@@ -78,17 +79,17 @@
             }
         }
 
-        public static void ChangeCurrentDirectoryAbsolute(string absolutePath)
+        public void ChangeCurrentDirectoryAbsolute(string absolutePath)
         {
             if (!Directory.Exists(absolutePath))
             {
-                OutputWriter.DisplayException(ExceptionMessage.InvalidPath);
+                throw new InvalidPathException();
             }
 
             SessionData.CurrentPath = absolutePath;
         }
 
-        public static void CreateDirectoryInCurrentFolder(string name)
+        public void CreateDirectoryInCurrentFolder(string name)
         {
             try
             {
@@ -97,7 +98,7 @@
             }
             catch (ArgumentException)
             {
-                OutputWriter.DisplayException(ExceptionMessage.ForbiddenSymbolsContainedInName);
+                throw new InvalidFileNameException();
             }
         }
     }

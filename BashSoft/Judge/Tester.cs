@@ -1,35 +1,34 @@
 ﻿namespace BashSoft.Judge
 {
+    using IO;
+    using Static_data;
     using System;
     using System.IO;
-    using BashSoft.IO;
-    using BashSoft.Static_data;
 
-    public static class Tester
+    public class Tester
     {
-        public static void CompareContent(string userOutputPath, string expectedOutputPath)
+        public void CompareContent(string userOutputPath, string expectedOutputPath)
         {
-            OutputWriter.WriteMessageOnNewLine("Reading files...");
-
             try
             {
+                OutputWriter.WriteMessageOnNewLine("Reading files...");
                 var mismatchPath = GetMismatchPath(expectedOutputPath);
                 var actualOutputLines = File.ReadAllLines(userOutputPath);
                 var expectedOutputLines = File.ReadAllLines(expectedOutputPath);
 
                 var mismatches = GetLinesWithPossibleMismatches(actualOutputLines, expectedOutputPath, out var hasMismatch);
 
-                PrintOutput(mismatches, hasMismatch, mismatchPath);
+                this.PrintOutput(mismatches, hasMismatch, mismatchPath);
 
                 OutputWriter.WriteMessageOnNewLine("Files Read!");
             }
-            catch (FileNotFoundException)
+            catch (IOException)
             {
-                OutputWriter.DisplayException(ExceptionMessage.InvalidPath);
+                // OutputWriter.DisplayException(ExceptionMessage.InvalidPath);
             }
         }
 
-        private static void PrintOutput(string[] mismatches, bool hasMismatch, string mismatchPath)
+        private void PrintOutput(string[] mismatches, bool hasMismatch, string mismatchPath)
         {
             if (hasMismatch)
             {
@@ -38,14 +37,7 @@
                     OutputWriter.WriteMessageOnNewLine(line);
                 }
 
-                try
-                {
-                    File.WriteAllLines(mismatchPath, mismatches);
-                }
-                catch (DirectoryNotFoundException)
-                {
-                    OutputWriter.DisplayException(ExceptionMessage.InvalidPath);
-                }
+                File.WriteAllLines(mismatchPath, mismatches);
 
                 return;
             }
@@ -53,7 +45,7 @@
             OutputWriter.WriteMessageOnNewLine("Files are identical. There are no mismatches.");
         }
 
-        private static string[] GetLinesWithPossibleMismatches(string[] actualOutputLines, string expectedOutputPath, out bool hasMismatch)
+        private string[] GetLinesWithPossibleMismatches(string[] actualOutputLines, string expectedOutputPath, out bool hasMismatch)
         {
             hasMismatch = false;
             var output = string.Empty;
@@ -93,7 +85,7 @@
             return mismatches;
         }
 
-        private static string GetMismatchPath(string expectedOutputPath)
+        private string GetMismatchPath(string expectedOutputPath)
         {
             var indexOf = expectedOutputPath.LastIndexOf('\\');
             var directoryPath = expectedOutputPath.Substring(0, indexOf);

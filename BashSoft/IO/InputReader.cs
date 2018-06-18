@@ -1,13 +1,19 @@
 ﻿namespace BashSoft.IO
 {
+    using Static_data;
     using System;
-    using BashSoft.Static_data;
 
-    internal static class InputReader
+    internal class InputReader
     {
         private const string endCommand = "quit";
+        private readonly CommandInterpreter interpreter;
 
-        public static void StartReadingCommands()
+        public InputReader(CommandInterpreter interpreter)
+        {
+            this.interpreter = interpreter;
+        }
+
+        public void StartReadingCommands()
         {
             while (true)
             {
@@ -19,7 +25,7 @@
                     break;
                 }
 
-                CommandInterpreter.InterpredCommand(inputLine);
+                this.interpreter.InterpretCommand(inputLine);
             }
         }
     }
