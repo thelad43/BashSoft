@@ -1,11 +1,13 @@
 ﻿namespace BashSoft.Judge
 {
+    using BashSoft.Exceptions;
+    using BashSoft.Interfaces;
     using IO;
     using Static_data;
     using System;
     using System.IO;
 
-    public class Tester
+    public class Tester : IContentComparer
     {
         public void CompareContent(string userOutputPath, string expectedOutputPath)
         {
@@ -24,7 +26,7 @@
             }
             catch (IOException)
             {
-                // OutputWriter.DisplayException(ExceptionMessage.InvalidPath);
+                throw new InvalidPathException();
             }
         }
 

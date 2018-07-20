@@ -1,13 +1,17 @@
 ﻿namespace BashSoft.IO.Commands
 {
+    using BashSoft.Attributes;
+    using BashSoft.Interfaces;
     using Exceptions;
-    using Judge;
-    using Repository;
 
+    [Alias("cdAbs")]
     public class ChangePathAbsoluteCommand : Command
     {
-        public ChangePathAbsoluteCommand(string input, string[] data, Tester judge, StudentsRepository repository, IOManager inputOutputManager)
-            : base(input, data, judge, repository, inputOutputManager)
+        [Inject]
+        private readonly IDirectoryManager inputOutputManager;
+
+        public ChangePathAbsoluteCommand(string input, string[] data)
+            : base(input, data)
         {
         }
 
@@ -16,7 +20,7 @@
             if (this.Data.Length == 2)
             {
                 var absolutePath = this.Data[1];
-                this.InputOutputManager.ChangeCurrentDirectoryAbsolute(absolutePath);
+                this.inputOutputManager.ChangeCurrentDirectoryAbsolute(absolutePath);
             }
             else
             {

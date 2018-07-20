@@ -1,6 +1,8 @@
 ﻿namespace BashSoft.Repository
 {
+    using DataStructures;
     using Exceptions;
+    using Interfaces;
     using IO;
     using Models;
     using Static_data;
@@ -10,14 +12,14 @@
     using System.Linq;
     using System.Text.RegularExpressions;
 
-    public class StudentsRepository
+    public class StudentsRepository : IDatabase
     {
         private bool isDataInitialized;
-        private Dictionary<string, Dictionary<string, List<int>>> studentsByCourse;
+        private readonly Dictionary<string, Dictionary<string, List<int>>> studentsByCourse;
         private readonly RepositoryFilter filter;
         private readonly RepositorySorter sorter;
-        private Dictionary<string, Course> courses;
-        private Dictionary<string, Student> students;
+        private Dictionary<string, ICourse> courses;
+        private Dictionary<string, IStudent> students;
 
         public StudentsRepository(RepositoryFilter filter, RepositorySorter sorter)
         {
@@ -34,8 +36,8 @@
                 return;
             }
 
-            this.students = new Dictionary<string, Student>();
-            this.courses = new Dictionary<string, Course>();
+            this.students = new Dictionary<string, IStudent>();
+            this.courses = new Dictionary<string, ICourse>();
             this.ReadData(fileName);
         }
 
@@ -82,7 +84,7 @@
                                 throw new ArgumentException(ExceptionMessage.InvalidScore);
                             }
 
-                            if (scores.Length > Course.NumberOfTasksOnExam)
+                            if (scores.Length > SoftUniCourse.NumberOfTasksOnExam)
                             {
                                 OutputWriter.DisplayException(ExceptionMessage.InvalidNumberOfScores);
                                 continue;
@@ -90,12 +92,12 @@
 
                             if (!this.students.ContainsKey(username))
                             {
-                                this.students.Add(username, new Student(username));
+                                this.students.Add(username, new SoftUniStudent(username));
                             }
 
                             if (!this.courses.ContainsKey(courseName))
                             {
-                                this.courses.Add(courseName, new Course(courseName));
+                                this.courses.Add(courseName, new SoftUniCourse(courseName));
                             }
 
                             var course = this.courses[courseName];
@@ -160,7 +162,7 @@
             return false;
         }
 
-        public void GetStudentsScoresFromCourse(string courseName, string userName)
+        public void GetStudentScoresFromCourse(string courseName, string userName)
         {
             if (IsQueryForStudentPossiblе(courseName, userName))
             {
@@ -176,7 +178,7 @@
 
                 foreach (var studentMarksEntry in this.courses[courseName].StudentsByName)
                 {
-                    this.GetStudentsScoresFromCourse(courseName, studentMarksEntry.Key);
+                    this.GetStudentScoresFromCourse(courseName, studentMarksEntry.Key);
                 }
             }
         }
@@ -207,6 +209,20 @@
                 var marks = this.courses[courseName].StudentsByName.ToDictionary(x => x.Key, y => y.Value.MarksByCourseName[courseName]);
                 this.sorter.OrderAndTake(marks, comparison, studentsToTake.Value);
             }
+        }
+
+        public ISimpleOrderedBag<ICourse> GetAllCoursesSorted(IComparer<ICourse> comparer)
+        {
+            var sortedCourses = new SimpleSortedList<ICourse>(comparer);
+            sortedCourses.AddAll(this.courses.Values);
+            return sortedCourses;
+        }
+
+        public ISimpleOrderedBag<IStudent> GetAllStudentsSorted(IComparer<IStudent> comparer)
+        {
+            var sortedStudents = new SimpleSortedList<IStudent>(comparer);
+            sortedStudents.AddAll(this.students.Values);
+            return sortedStudents;
         }
     }
 }

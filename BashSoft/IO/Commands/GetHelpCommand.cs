@@ -1,13 +1,13 @@
 ﻿namespace BashSoft.IO.Commands
 {
+    using BashSoft.Attributes;
     using Exceptions;
-    using Judge;
-    using Repository;
 
+    [Alias("help")]
     public class GetHelpCommand : Command
     {
-        public GetHelpCommand(string input, string[] data, Tester judge, StudentsRepository repository, IOManager inputOutputManager)
-            : base(input, data, judge, repository, inputOutputManager)
+        public GetHelpCommand(string input, string[] data)
+            : base(input, data)
         {
         }
 
@@ -35,6 +35,7 @@
             OutputWriter.WriteMessageOnNewLine(string.Format("|{0, -98}|", "download file - download: path of file (saved in current directory)"));
             OutputWriter.WriteMessageOnNewLine(string.Format("|{0, -98}|", "download file asinchronously - downloadAsynch: path of file (save in the current directory)"));
             OutputWriter.WriteMessageOnNewLine(string.Format("|{0, -98}|", "get help – help"));
+            OutputWriter.WriteMessageOnNewLine(string.Format("|{0, -98}|", "display data entities - display students/courses ascending/descending"));
             OutputWriter.WriteMessageOnNewLine(new string('_', 100));
             OutputWriter.WriteEmptyLine();
         }

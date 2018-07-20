@@ -1,12 +1,13 @@
 ﻿namespace BashSoft.Repository
 {
+    using Interfaces;
     using IO;
     using Static_data;
     using System;
     using System.Collections.Generic;
     using System.Linq;
 
-    public class RepositorySorter
+    public class RepositorySorter : IDataSorter
     {
         public void OrderAndTake(Dictionary<string, double> studentsWithMarks, string comparison,
             int studentsToTake)

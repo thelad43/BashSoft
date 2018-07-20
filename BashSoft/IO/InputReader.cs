@@ -1,14 +1,15 @@
 ﻿namespace BashSoft.IO
 {
+    using Interfaces;
     using Static_data;
     using System;
 
-    internal class InputReader
+    public class InputReader : IReader
     {
         private const string endCommand = "quit";
-        private readonly CommandInterpreter interpreter;
+        private readonly IInterpreter interpreter;
 
-        public InputReader(CommandInterpreter interpreter)
+        public InputReader(IInterpreter interpreter)
         {
             this.interpreter = interpreter;
         }

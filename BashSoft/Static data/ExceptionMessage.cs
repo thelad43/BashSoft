@@ -1,6 +1,6 @@
 ﻿namespace BashSoft.Static_data
 {
-    internal static class ExceptionMessage
+    public static class ExceptionMessage
     {
         public const string DataAlreadyInitializedException = "Data is already initialized!";
 

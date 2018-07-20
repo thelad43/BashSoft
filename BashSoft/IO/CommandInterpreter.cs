@@ -1,19 +1,21 @@
 ﻿namespace BashSoft.IO
 {
+    using BashSoft.Attributes;
     using Exceptions;
+    using Interfaces;
     using IO.Commands;
-    using Judge;
-    using Repository;
     using System;
     using System.IO;
+    using System.Linq;
+    using System.Reflection;
 
-    internal class CommandInterpreter
+    public class CommandInterpreter : IInterpreter
     {
-        private readonly Tester judge;
-        private readonly StudentsRepository repository;
-        private readonly IOManager inputOutputManager;
+        private readonly IContentComparer judge;
+        private readonly IDatabase repository;
+        private readonly IDirectoryManager inputOutputManager;
 
-        public CommandInterpreter(Tester judge, StudentsRepository repository, IOManager inputOutputManager)
+        public CommandInterpreter(IContentComparer judge, IDatabase repository, IDirectoryManager inputOutputManager)
         {
             this.judge = judge;
             this.repository = repository;
@@ -50,60 +52,48 @@
             }
         }
 
-        private Command ParseCommand(string input, string[] data, string command)
+        private IExecutable ParseCommand(string input, string[] data, string command)
         {
-            switch (command)
+            var parametersForConstruction = new object[]
             {
-                case "open":
-                    return new OpenFileCommand(input, data, this.judge, this.repository, this.inputOutputManager);
+               input, data
+            };
 
-                case "mkdir":
-                    return new MakeDirectoryCommand(input, data, this.judge, this.repository, this.inputOutputManager);
+            var assembly = Assembly.GetExecutingAssembly();
 
-                case "ls":
-                    return new TraverseFoldersCommand(input, data, this.judge, this.repository, this.inputOutputManager);
+            var typeOfCommand = assembly
+                .GetTypes()
+                .First(type => type.GetCustomAttributes(typeof(AliasAttribute))
+                .Where(atr => atr.Equals(command))
+                .ToArray()
+                .Length > 0);
 
-                case "cmp":
-                    return new CompareFilesCommand(input, data, this.judge, this.repository, this.inputOutputManager);
-
-                case "cdRel":
-                    return new ChangePathRelativelyCommand(input, data, this.judge, this.repository, this.inputOutputManager);
-
-                case "cdAbs":
-                    return new ChangePathAbsoluteCommand(input, data, this.judge, this.repository, this.inputOutputManager);
-
-                case "readDb":
-                    return new ReadDatabaseCommand(input, data, this.judge, this.repository, this.inputOutputManager);
-
-                case "help":
-                    return new GetHelpCommand(input, data, this.judge, this.repository, this.inputOutputManager);
-
-                case "filter":
-                    return new PrintFilteredStudentsCommand(input, data, this.judge, this.repository, this.inputOutputManager);
-
-                case "order"://decOrder
-                    return new PrintOrderedStudentsCommand(input, data, this.judge, this.repository, this.inputOutputManager);
-
-                //case "decOrder":
-                //    // TODO
-                //    break;
-
-                //case "download":
-                //    // TODO
-                //    break;
-
-                case "downloadAsync":
-                    return new GetHelpCommand(input, data, this.judge, this.repository, this.inputOutputManager);
-
-                case "show":
-                    return new ShowCourseCommand(input, data, this.judge, this.repository, this.inputOutputManager);
-
-                case "dropdb":
-                    return new DropDatabaseCommand(input, data, this.judge, this.repository, this.inputOutputManager);
-
-                default:
-                    throw new InvalidCommandException(input);
+            if (typeOfCommand is null)
+            {
+                throw new InvalidCommandException(command);
             }
+
+            var typeInterpreter = typeof(CommandInterpreter);
+            var exe = (Command)Activator.CreateInstance(typeOfCommand, parametersForConstruction);
+
+            var fieldsOfCommand = typeOfCommand.GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
+            var fieldsOfInterpreter = typeInterpreter.GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
+
+            foreach (var fieldOfCommand in fieldsOfCommand)
+            {
+                var injectAttribute = fieldOfCommand.GetCustomAttribute(typeof(InjectAttribute));
+
+                if (injectAttribute != null)
+                {
+                    if (fieldsOfInterpreter.Any(x => x.FieldType == fieldOfCommand.FieldType))
+                    {
+                        fieldOfCommand
+                            .SetValue(exe, fieldsOfInterpreter.First(x => x.FieldType == fieldOfCommand.FieldType).GetValue(this));
+                    }
+                }
+            }
+
+            return exe;
         }
     }
 }

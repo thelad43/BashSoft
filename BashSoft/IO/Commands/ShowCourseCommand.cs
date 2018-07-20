@@ -1,13 +1,17 @@
 ﻿namespace BashSoft.IO.Commands
 {
+    using BashSoft.Attributes;
+    using BashSoft.Interfaces;
     using Exceptions;
-    using Judge;
-    using Repository;
 
+    [Alias("show")]
     public class ShowCourseCommand : Command
     {
-        public ShowCourseCommand(string input, string[] data, Tester judge, StudentsRepository repository, IOManager inputOutputManager)
-            : base(input, data, judge, repository, inputOutputManager)
+        [Inject]
+        private readonly IDatabase repository;
+
+        public ShowCourseCommand(string input, string[] data)
+            : base(input, data)
         {
         }
 
@@ -16,13 +20,13 @@
             if (this.Data.Length == 2)
             {
                 var courseName = this.Data[1];
-                this.Repository.GetAllStudentsFromCourse(courseName);
+                this.repository.GetAllStudentsFromCourse(courseName);
             }
             else if (this.Data.Length == 3)
             {
                 var courseName = this.Data[1];
                 var userName = this.Data[2];
-                this.Repository.GetStudentsScoresFromCourse(courseName, userName);
+                this.repository.GetStudentScoresFromCourse(courseName, userName);
             }
             else
             {

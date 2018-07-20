@@ -1,13 +1,17 @@
 ﻿namespace BashSoft.IO.Commands
 {
+    using BashSoft.Attributes;
+    using BashSoft.Interfaces;
     using Exceptions;
-    using Judge;
-    using Repository;
 
+    [Alias("cdRel")]
     public class ChangePathRelativelyCommand : Command
     {
-        public ChangePathRelativelyCommand(string input, string[] data, Tester judge, StudentsRepository repository, IOManager inputOutputManager)
-            : base(input, data, judge, repository, inputOutputManager)
+        [Inject]
+        private readonly IDirectoryManager inputOutputManager;
+
+        public ChangePathRelativelyCommand(string input, string[] data)
+            : base(input, data)
         {
         }
 
@@ -16,7 +20,7 @@
             if (this.Data.Length == 2)
             {
                 var relPath = this.Data[1];
-                this.InputOutputManager.ChangeCurrentDirectoryRelative(relPath);
+                this.inputOutputManager.ChangeCurrentDirectoryRelative(relPath);
             }
             else
             {
